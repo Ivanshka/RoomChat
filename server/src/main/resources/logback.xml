@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+
+    <appender name="TRACE_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>TRACE</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%d{HH:mm:ss.SSS} %gray(%-5level) [%blue(%thread)] %yellow(%logger{36}): %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="DEBUG_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%d{HH:mm:ss.SSS} %boldCyan(%-5level) [%blue(%thread)] %yellow(%logger{36}): %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="INFO_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%d{HH:mm:ss.SSS} %boldGreen(%-5level) [%blue(%thread)] %yellow(%logger{36}): %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="WARN_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%d{HH:mm:ss.SSS} %boldYellow(%-5level) [%blue(%thread)] %yellow(%logger{36}): %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ERROR_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <charset>UTF-8</charset>
+            <pattern>%d{HH:mm:ss.SSS} %boldRed(%-5level) [%blue(%thread)] %yellow(%logger{36}): %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="by.ivanshka.roomchat" level="TRACE">
+        <appender-ref ref="TRACE_STDOUT" />
+        <appender-ref ref="DEBUG_STDOUT" />
+    </logger>
+
+<!--    root is like default logger for ALL packages and classes-->
+    <root level="INFO">
+        <appender-ref ref="INFO_STDOUT" />
+        <appender-ref ref="WARN_STDOUT" />
+        <appender-ref ref="ERROR_STDOUT" />
+    </root>
+
+</configuration>

@@ -1,0 +1,11 @@
+spring:
+  main:
+    web-application-type: NONE
+
+room-chat:
+  client:
+    title: ChatRoom Client
+    version: 1.0
+    formatted-version: " (v${room-chat.client.version})"
+    host: localhost
+    port: 8080

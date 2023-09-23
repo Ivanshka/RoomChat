@@ -11,25 +11,22 @@ import by.ivanshka.roomchat.common.network.packet.operation.OperationResultPacke
 import by.ivanshka.roomchat.common.network.packet.operation.impl.ChangeUsernamePacket;
 import by.ivanshka.roomchat.common.network.packet.operation.impl.JoinRoomPacket;
 import by.ivanshka.roomchat.common.network.packet.operation.impl.LeaveRoomPacket;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.net.SocketException;
 import java.util.function.Consumer;
 
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class ChatController implements IncomingPacketCallback, ExceptionHandlerCallback {
+    private final ChatSession session = new ChatSession();
     private final NetworkClient client;
-    private final ChatSession session;
-
     private final Consumer<String> eventMessageHandler;
 
     // todo: add state machine of chat to this class
-
-    public ChatController(String host, int port, Consumer<String> eventMessageHandler) {
-        session = new ChatSession();
-        client = new NetworkClient(host, port);
-        this.eventMessageHandler = eventMessageHandler;
-    }
 
     public void connect() {
         client.connect(this, this);

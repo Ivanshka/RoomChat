@@ -13,17 +13,23 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class ChatServer {
-    private static final int SERVER_PORT = 8080;
-    private static final RoomService ROOM_SERVICE = new RoomService();
-    private static final ClientService CLIENT_SERVICE = new ClientService();
-    private static ServerBootstrap server;
-    private static ChannelFuture channelFuture;
+    @Value("${roomchat.server.port}")
+    private int SERVER_PORT = 8080;
+    private final RoomService roomService;
+    private final ClientService clientService;
+    private ServerBootstrap server;
+    private ChannelFuture channelFuture;
 
-    public static void run() {
+    public void run() {
 
 //        new Thread(() -> {
             EventLoopGroup bossGroup = new NioEventLoopGroup(1); // thread pool for clients that are connecting
@@ -40,7 +46,7 @@ public class ChatServer {
                                         .addLast(
                                                 new PacketDecoder(),
                                                 new PacketEncoder(),
-                                                new NetworkEventHandler(ROOM_SERVICE, CLIENT_SERVICE)
+                                                new NetworkEventHandler(roomService, clientService)
                                         );
                             }
                         })

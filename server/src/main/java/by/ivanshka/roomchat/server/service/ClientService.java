@@ -6,9 +6,11 @@ import by.ivanshka.roomchat.common.network.packet.operation.OperationResultPacke
 import by.ivanshka.roomchat.common.network.packet.operation.impl.ChangeUsernamePacket;
 import by.ivanshka.roomchat.server.chat.Client;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component
 @RequiredArgsConstructor
 public class ClientService {
     public void changeUsername(ChangeUsernamePacket packet, Client client) {

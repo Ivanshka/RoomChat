@@ -8,12 +8,14 @@ import by.ivanshka.roomchat.server.chat.Client;
 import by.ivanshka.roomchat.server.chat.room.PublicRoom;
 import by.ivanshka.roomchat.server.chat.room.Room;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
+@Component
 public class RoomService {
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 

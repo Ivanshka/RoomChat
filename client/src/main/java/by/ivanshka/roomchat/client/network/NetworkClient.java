@@ -14,19 +14,22 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Slf4j
 @Getter
+@Component
 public class NetworkClient {
-    private final String host;
-    private final int port;
+    @Setter
+    @Value("${room-chat.client.host}")
+    private String host;
+    @Setter
+    @Value("${room-chat.client.port}")
+    private int port;
     private SocketChannel networkChannel;
-
-    public NetworkClient(String host, int port) {
-        this.host = host;
-        this.port = port;
-    }
 
     public void connect(IncomingPacketCallback incomingPacketCallback, ExceptionHandlerCallback exceptionHandlerCallback) {
 

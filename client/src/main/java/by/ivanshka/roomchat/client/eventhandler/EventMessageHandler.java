@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 @Slf4j
 @Component
-public class DefaultEventMessageHandler implements Consumer<String> {
+public class EventMessageHandler implements Consumer<String> {
     @Override
     public void accept(String s) {
         log.info(s);

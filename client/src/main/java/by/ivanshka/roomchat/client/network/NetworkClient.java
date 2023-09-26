@@ -1,7 +1,8 @@
 package by.ivanshka.roomchat.client.network;
 
-import by.ivanshka.roomchat.client.callback.ExceptionHandlerCallback;
 import by.ivanshka.roomchat.client.callback.IncomingPacketCallback;
+import by.ivanshka.roomchat.client.exception.handler.ExceptionHandler;
+import by.ivanshka.roomchat.client.exception.impl.DisconnectedException;
 import by.ivanshka.roomchat.common.network.decoder.PacketDecoder;
 import by.ivanshka.roomchat.common.network.encoder.PacketEncoder;
 import by.ivanshka.roomchat.common.network.packet.Packet;
@@ -14,26 +15,27 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Getter
 @Component
+@RequiredArgsConstructor
 public class NetworkClient {
-    @Setter
-    @Value("${room-chat.client.host}")
-    private String host;
-    @Setter
-    @Value("${room-chat.client.port}")
-    private int port;
+    private final IncomingPacketCallback incomingPacketCallback;
+    private final ExceptionHandler exceptionHandler;
     private SocketChannel networkChannel;
+    private volatile boolean isConnected;
 
-    public void connect(IncomingPacketCallback incomingPacketCallback, ExceptionHandlerCallback exceptionHandlerCallback) {
+    public void connect(String host, int port) {
 
         new Thread(() -> {
+            if (isConnected) {
+                log.warn("Connected already");
+            }
+
             EventLoopGroup workerGroup = new NioEventLoopGroup(1);
 
             try {
@@ -48,12 +50,13 @@ public class NetworkClient {
                         ch.pipeline().addLast(
                                 new PacketEncoder(),
                                 new PacketDecoder(),
-                                new NetworkEventHandler(incomingPacketCallback, exceptionHandlerCallback)
+                                new NetworkEventHandler(incomingPacketCallback, exceptionHandler)
                         );
                     }
                 });
 
                 ChannelFuture f = clientBootstrap.connect(host, port).sync();
+                isConnected = true;
                 f.channel().closeFuture().sync();
 
             } catch (InterruptedException e) {
@@ -61,15 +64,28 @@ public class NetworkClient {
                 throw new RuntimeException(e);
             } finally {
                 workerGroup.shutdownGracefully();
+                log.info("Disconnected");
             }
-        }).start();
+        }, "NetworkThread").start();
     }
 
     public void sendPacket(Packet packet) {
+        requireConnection();
         networkChannel.writeAndFlush(packet);
     }
 
     public void disconnect() {
-        networkChannel.close();
+        if (isConnected) {
+            networkChannel.close();
+            isConnected = false;
+        } else {
+            throw new DisconnectedException();
+        }
+    }
+
+    private void requireConnection() {
+        if (!isConnected()) {
+            throw new DisconnectedException();
+        }
     }
 }

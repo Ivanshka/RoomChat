@@ -1,24 +1,26 @@
 package by.ivanshka.roomchat.client.chat;
 
-import by.ivanshka.roomchat.client.exception.InvalidSessionParameterException;
+import by.ivanshka.roomchat.client.exception.impl.InvalidSessionParameterException;
 import by.ivanshka.roomchat.common.util.StringUtils;
 import lombok.Getter;
+import org.springframework.stereotype.Component;
 
 @Getter
+@Component
 public class ChatSession {
     private String username;
     private String roomId;
 
     public void setUsername(String username) {
-        if (!StringUtils.notNullOrEmpty(username)) {
+        if (StringUtils.isNullOrEmpty(username)) {
             throw new InvalidSessionParameterException("Username can't be null or empty");
         }
         this.username = username;
     }
 
     public void setRoomId(String roomId) {
-        if (!StringUtils.notNullOrEmpty(roomId)) {
-            throw new InvalidSessionParameterException("Room id can't be null or empty");
+        if (StringUtils.isNullOrEmpty(roomId)) {
+            throw new InvalidSessionParameterException("Room name can't be null or empty");
         }
         this.roomId = roomId;
     }

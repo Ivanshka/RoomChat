@@ -1,4 +1,4 @@
-package by.ivanshka.roomchat.client.command;
+package by.ivanshka.roomchat.common.command;
 
 import java.util.List;
 

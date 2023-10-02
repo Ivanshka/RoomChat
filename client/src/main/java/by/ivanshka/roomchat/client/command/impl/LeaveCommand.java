@@ -1,7 +1,7 @@
 package by.ivanshka.roomchat.client.command.impl;
 
 import by.ivanshka.roomchat.client.chat.ChatController;
-import by.ivanshka.roomchat.client.command.Command;
+import by.ivanshka.roomchat.common.command.Command;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

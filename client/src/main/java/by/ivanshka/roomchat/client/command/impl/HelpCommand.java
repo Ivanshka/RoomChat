@@ -1,6 +1,6 @@
 package by.ivanshka.roomchat.client.command.impl;
 
-import by.ivanshka.roomchat.client.command.Command;
+import by.ivanshka.roomchat.common.command.Command;
 import by.ivanshka.roomchat.client.exception.impl.CommandExecutionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

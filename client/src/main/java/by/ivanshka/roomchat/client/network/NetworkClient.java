@@ -1,7 +1,7 @@
 package by.ivanshka.roomchat.client.network;
 
 import by.ivanshka.roomchat.client.callback.IncomingPacketCallback;
-import by.ivanshka.roomchat.client.exception.handler.ExceptionHandler;
+import by.ivanshka.roomchat.common.exception.handler.ExceptionHandler;
 import by.ivanshka.roomchat.client.exception.impl.DisconnectedException;
 import by.ivanshka.roomchat.common.network.decoder.PacketDecoder;
 import by.ivanshka.roomchat.common.network.encoder.PacketEncoder;

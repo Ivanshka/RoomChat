@@ -6,7 +6,6 @@ import by.ivanshka.roomchat.server.network.NetworkEventHandler;
 import by.ivanshka.roomchat.server.service.ClientService;
 import by.ivanshka.roomchat.server.service.RoomService;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -22,21 +21,27 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ChatServer {
-    @Value("${roomchat.server.port}")
-    private int SERVER_PORT = 8080;
     private final RoomService roomService;
     private final ClientService clientService;
-    private ServerBootstrap server;
-    private ChannelFuture channelFuture;
 
-    public void run() {
+    @Value("${room-chat.server.port:8080}")
+    private int port;
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
+    private volatile boolean isRun;
 
-//        new Thread(() -> {
-            EventLoopGroup bossGroup = new NioEventLoopGroup(1); // thread pool for clients that are connecting
-            EventLoopGroup workerGroup = new NioEventLoopGroup(); // thread pool for handling clients requests (network events)
+    public boolean isRun() {
+        return isRun;
+    }
+
+    public void start() {
+
+        new Thread(() -> {
+            bossGroup = new NioEventLoopGroup(1); // thread pool for clients that are connecting
+            workerGroup = new NioEventLoopGroup(); // thread pool for handling clients requests (network events)
 
             try {
-                server = new ServerBootstrap();
+                ServerBootstrap server = new ServerBootstrap();
                 server.group(bossGroup, workerGroup)
                         .channel(NioServerSocketChannel.class)
                         .childHandler(new ChannelInitializer<SocketChannel>() {
@@ -53,19 +58,27 @@ public class ChatServer {
                         .option(ChannelOption.SO_BACKLOG, 128)
                         .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-                try {
-                    channelFuture = server.bind(SERVER_PORT).sync();
-                    channelFuture.channel().closeFuture().sync();
-                } catch (InterruptedException e) {
-                    log.error("Chat server work was interrupted", e);
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(e);
-                }
-            } finally {
-                bossGroup.shutdownGracefully();
-                workerGroup.shutdownGracefully();
-            }
-//        }).start();
+                isRun = true;
 
+                server.bind(port)
+                        .sync()
+                        .channel()
+                        .closeFuture()
+                        .sync();
+
+            } catch (InterruptedException e) {
+                log.error("Can't sync(), thread was interrupted. Server will be shutted down.", e);
+                stop();
+            }
+        }, "ServerThread").start();
+
+    }
+
+    public void stop() {
+        log.warn("Server shutdown was initiated...");
+        isRun = false;
+        bossGroup.shutdownGracefully();
+        workerGroup.shutdownGracefully();
+        log.warn("Server shutted down.");
     }
 }

@@ -4,7 +4,7 @@ import by.ivanshka.roomchat.client.exception.impl.AlreadyJoinedRoomException;
 import by.ivanshka.roomchat.client.exception.impl.CommandExecutionException;
 import by.ivanshka.roomchat.client.exception.impl.DisconnectedException;
 import by.ivanshka.roomchat.client.exception.impl.InvalidSessionParameterException;
-import by.ivanshka.roomchat.client.exception.handler.ExceptionHandler;
+import by.ivanshka.roomchat.common.exception.handler.AbstractExceptionHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ import java.net.SocketException;
 
 @Slf4j
 @Component
-public class ChatRoomExceptionHandler implements ExceptionHandler {
+public class ClientExceptionHandler extends AbstractExceptionHandler {
     @Override
     public void handle(Throwable e) {
         switch (e) {
@@ -28,9 +28,5 @@ public class ChatRoomExceptionHandler implements ExceptionHandler {
 
             default -> log.error("Unhandled exception!", e);
         }
-    }
-
-    private static void printExceptionMessage(Throwable e) {
-        log.warn("Error. " + e.getMessage());
     }
 }

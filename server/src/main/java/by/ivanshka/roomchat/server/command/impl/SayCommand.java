@@ -1,7 +1,7 @@
-package by.ivanshka.roomchat.client.command.impl;
+package by.ivanshka.roomchat.server.command.impl;
 
-import by.ivanshka.roomchat.client.chat.ChatController;
 import by.ivanshka.roomchat.common.command.Command;
+import by.ivanshka.roomchat.server.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -9,16 +9,17 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class DisconnectCommand implements Command {
-    private static final String COMMAND_STRING = "disconnect";
-    private static final String HELP_STRING = "Disconnect from current chat server";
+public class SayCommand implements Command {
+    private static final String COMMAND_STRING = "say";
+    private static final String HELP_STRING = "Send message as server to specified room or to all rooms";
     private static final String FULL_HELP_TEXT = """
             Command:
-                /DISCONNECT
+                /SAY [roomName] yourMessage
+                /SAY -a yourMessage
             Description:
-                Disconnect from server. After disconnecting you can connect to another server.
+                Send message as server to specified room or to all rooms. To send message to all rooms use '-a' key before message
             """;
-    private final ChatController chatController;
+    private final RoomService chatServer;
 
     @Override
     public String getCommandString() {
@@ -27,7 +28,7 @@ public class DisconnectCommand implements Command {
 
     @Override
     public void execute(List<String> args) {
-        chatController.disconnect();
+
     }
 
     @Override

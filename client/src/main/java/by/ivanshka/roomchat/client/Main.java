@@ -1,6 +1,6 @@
 package by.ivanshka.roomchat.client;
 
-import by.ivanshka.roomchat.client.ui.MainController;
+import by.ivanshka.roomchat.client.ui.ClientController;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -13,7 +13,7 @@ public class Main {
                 .web(WebApplicationType.NONE)
                 .run(args);
 
-        MainController mainController = (MainController) context.getBean("mainController");
-        mainController.start();
+        ClientController clientController = context.getBean(ClientController.class);
+        clientController.start();
     }
 }

@@ -1,4 +1,4 @@
-package by.ivanshka.roomchat.client.exception.handler;
+package by.ivanshka.roomchat.common.exception.handler;
 
 @FunctionalInterface
 public interface ExceptionHandler {

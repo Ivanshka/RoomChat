@@ -1,5 +1,6 @@
 package by.ivanshka.roomchat.server;
 
+import by.ivanshka.roomchat.server.ui.ServerController;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -12,7 +13,7 @@ public class Main {
                 .web(WebApplicationType.NONE)
                 .run(args);
 
-        ChatServer server = (ChatServer) context.getBean("chatServer");
-        server.run();
+        ServerController server = context.getBean(ServerController.class);
+        server.start();
     }
 }

@@ -1,48 +1,63 @@
 package by.ivanshka.roomchat.server.network;
 
+import by.ivanshka.roomchat.common.exception.handler.ExceptionHandler;
 import by.ivanshka.roomchat.common.network.packet.Packet;
 import by.ivanshka.roomchat.common.network.packet.impl.MessagePacket;
 import by.ivanshka.roomchat.common.network.packet.operation.impl.ChangeUsernamePacket;
 import by.ivanshka.roomchat.common.network.packet.operation.impl.JoinRoomPacket;
+import by.ivanshka.roomchat.common.network.packet.operation.impl.LeaveRoomPacket;
 import by.ivanshka.roomchat.server.chat.Client;
 import by.ivanshka.roomchat.server.service.ClientService;
 import by.ivanshka.roomchat.server.service.RoomService;
-import io.netty.channel.Channel;
+import by.ivanshka.roomchat.server.storage.ClientStorage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.SocketException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 @Slf4j
 @RequiredArgsConstructor
 public class NetworkEventHandler extends ChannelInboundHandlerAdapter {
-    private static final Map<Channel, Client> clients = new ConcurrentHashMap<>();
     private final RoomService roomService;
     private final ClientService clientService;
+    private final ExceptionHandler exceptionHandler;
+
+    private static final List<Consumer<ChannelHandlerContext>> CONNECTED_EVENT_HANDLERS = new ArrayList<>();
+    private static final List<Consumer<ChannelHandlerContext>> DISCONNECTED_EVENT_HANDLERS = new ArrayList<>();
+
+    public static void addConnectedEventHandler(Consumer<ChannelHandlerContext> handler) {
+        CONNECTED_EVENT_HANDLERS.add(handler);
+    }
+
+    public static void addDisconnectedEventHandler(Consumer<ChannelHandlerContext> handler) {
+        DISCONNECTED_EVENT_HANDLERS.add(handler);
+    }
+
+    public static void removeConnectedEventHandler(Consumer<ChannelHandlerContext> handler) {
+        CONNECTED_EVENT_HANDLERS.remove(handler);
+    }
+
+    public static void removeDisconnectedEventHandler(Consumer<ChannelHandlerContext> handler) {
+        DISCONNECTED_EVENT_HANDLERS.remove(handler);
+    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        Channel channel = ctx.channel();
-        Client newClient = new Client(channel);
-        clients.put(channel, newClient);
-        log.info("New client was connected: " + channel.remoteAddress().toString());
+        CONNECTED_EVENT_HANDLERS.forEach(handler -> handler.accept(ctx));
+        log.info("New client connected: " + ctx.channel().remoteAddress().toString());
         super.channelActive(ctx);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Channel channel = ctx.channel();
-        Client client = clients.get(channel);
+        DISCONNECTED_EVENT_HANDLERS.forEach(handler -> handler.accept(ctx));
 
-        clients.remove(channel);
-        roomService.removeFromRoomIfJoined(client);
-
-        String ip = client.getChannel().remoteAddress().toString();
-        log.info("Client was disconnected: " + ip);
+        String ip = ctx.channel().remoteAddress().toString();
+        log.info("Client disconnected: " + ip);
 
         super.channelInactive(ctx);
     }
@@ -50,27 +65,25 @@ public class NetworkEventHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         Packet packet = (Packet) msg;
-
-        Channel channel = ctx.channel();
-        Client client = clients.get(channel);
-
-        switch (packet.getType()) {
-            case JOIN_ROOM_OPERATION -> roomService.joinRoom((JoinRoomPacket) packet, client);
-            case LEAVE_ROOM_OPERATION -> roomService.leaveRoom(client);
-            case CHANGE_USERNAME_OPERATION -> clientService.changeUsername((ChangeUsernamePacket) packet, client);
-            case MESSAGE -> roomService.broadcastMessage(client, (MessagePacket) packet);
-            default -> log.warn("Got unknown packet: " + packet);
-        }
+        handlePacket(ctx, packet);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        if (cause instanceof SocketException) {
-            log.warn("Client terminated connection unexpectedly: " + cause.getMessage());
-        } else {
-            log.error("Connection was closed cause unexpectedly exception. Stacktrace is shown below.", cause);
-        }
-
+        log.error("Connection was closed cause error shown below.");
+        exceptionHandler.handle(cause);
         ctx.close();
+    }
+
+    private void handlePacket(ChannelHandlerContext ctx, Packet packet) {
+        Client client = clientService.getClientByChannel(ctx.channel());
+
+        switch (packet) {
+            case JoinRoomPacket pkt -> roomService.joinRoom(pkt, client);
+            case LeaveRoomPacket ignored -> roomService.leaveRoom(client);
+            case ChangeUsernamePacket pkt -> clientService.changeUsername(pkt, client);
+            case MessagePacket pkt -> roomService.sendToRoomByClient(pkt, client);
+            default -> log.warn("Got unknown packet: " + packet);
+        }
     }
 }

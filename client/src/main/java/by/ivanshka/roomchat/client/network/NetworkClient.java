@@ -30,11 +30,12 @@ public class NetworkClient {
     private volatile boolean isConnected;
 
     public void connect(String host, int port) {
+        if (isConnected) {
+            log.warn("Connected already, you have to disconnect before connecting to another server");
+            return;
+        }
 
         new Thread(() -> {
-            if (isConnected) {
-                log.warn("Connected already");
-            }
 
             EventLoopGroup workerGroup = new NioEventLoopGroup(1);
 

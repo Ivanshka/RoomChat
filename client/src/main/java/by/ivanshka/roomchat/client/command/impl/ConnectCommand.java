@@ -2,7 +2,7 @@ package by.ivanshka.roomchat.client.command.impl;
 
 import by.ivanshka.roomchat.client.chat.ChatController;
 import by.ivanshka.roomchat.common.command.Command;
-import by.ivanshka.roomchat.client.exception.impl.CommandExecutionException;
+import by.ivanshka.roomchat.common.exception.impl.CommandExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -39,8 +39,8 @@ public class ConnectCommand implements Command {
     @Override
     public void execute(List<String> args) {
         if (args.isEmpty()) {
-            chatController.connect();
             log.info("Default settings will be used to connect");
+            chatController.connect();
             return;
         }
 

@@ -20,9 +20,9 @@ public class IncomingPacketCallbackImpl implements IncomingPacketCallback {
 
     @Override
     public void handleIncomingPacket(Packet packet) {
-        switch (packet.getType()) {
-            case MESSAGE -> handleMessagePacket((MessagePacket) packet);
-            case OPERATION_RESULT -> handleActionResultPacket((OperationResultPacket) packet);
+        switch (packet) {
+            case MessagePacket pkt -> handleMessagePacket(pkt);
+            case OperationResultPacket pkt -> handleActionResultPacket(pkt);
             default -> log.warn("Got unknown packet: " + packet);
         }
     }

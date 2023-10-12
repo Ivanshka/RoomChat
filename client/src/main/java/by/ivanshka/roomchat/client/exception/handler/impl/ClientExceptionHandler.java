@@ -1,7 +1,7 @@
 package by.ivanshka.roomchat.client.exception.handler.impl;
 
 import by.ivanshka.roomchat.client.exception.impl.AlreadyJoinedRoomException;
-import by.ivanshka.roomchat.client.exception.impl.CommandExecutionException;
+import by.ivanshka.roomchat.common.exception.impl.CommandExecutionException;
 import by.ivanshka.roomchat.client.exception.impl.DisconnectedException;
 import by.ivanshka.roomchat.client.exception.impl.InvalidSessionParameterException;
 import by.ivanshka.roomchat.common.exception.handler.AbstractExceptionHandler;

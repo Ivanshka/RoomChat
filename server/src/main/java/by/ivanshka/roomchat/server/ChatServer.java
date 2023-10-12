@@ -1,5 +1,6 @@
 package by.ivanshka.roomchat.server;
 
+import by.ivanshka.roomchat.common.exception.handler.ExceptionHandler;
 import by.ivanshka.roomchat.common.network.decoder.PacketDecoder;
 import by.ivanshka.roomchat.common.network.encoder.PacketEncoder;
 import by.ivanshka.roomchat.server.network.NetworkEventHandler;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 public class ChatServer {
     private final RoomService roomService;
     private final ClientService clientService;
+    private final ExceptionHandler exceptionHandler;
 
     @Value("${room-chat.server.port:8080}")
     private int port;
@@ -51,7 +53,7 @@ public class ChatServer {
                                         .addLast(
                                                 new PacketDecoder(),
                                                 new PacketEncoder(),
-                                                new NetworkEventHandler(roomService, clientService)
+                                                new NetworkEventHandler(roomService, clientService, exceptionHandler)
                                         );
                             }
                         })

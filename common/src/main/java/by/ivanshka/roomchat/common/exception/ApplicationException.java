@@ -1,4 +1,4 @@
-package by.ivanshka.roomchat.client.exception;
+package by.ivanshka.roomchat.common.exception;
 
 public abstract class ApplicationException extends RuntimeException {
     public ApplicationException() {

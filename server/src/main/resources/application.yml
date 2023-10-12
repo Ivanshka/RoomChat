@@ -1,6 +1,7 @@
 room-chat:
   server:
     title: ChatRoom Server
+    public-title: Server
     version: 1.0
     formatted-version: " (v${room-chat.server.version})"
     port: 8080

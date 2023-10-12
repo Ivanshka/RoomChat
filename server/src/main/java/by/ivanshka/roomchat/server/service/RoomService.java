@@ -5,27 +5,34 @@ import by.ivanshka.roomchat.common.network.packet.operation.Operation;
 import by.ivanshka.roomchat.common.network.packet.operation.OperationResultPacket;
 import by.ivanshka.roomchat.common.network.packet.operation.impl.JoinRoomPacket;
 import by.ivanshka.roomchat.server.chat.Client;
-import by.ivanshka.roomchat.server.chat.room.PublicRoom;
 import by.ivanshka.roomchat.server.chat.room.Room;
+import by.ivanshka.roomchat.server.storage.RoomStorage;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.security.InvalidParameterException;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class RoomService {
-    private final Map<String, Room> rooms = new ConcurrentHashMap<>();
+    private final RoomStorage roomStorage;
 
-    public void broadcastMessage(Client client, MessagePacket packet) {
-        client.getRoom().get().broadcast(packet);
+    @Value("${room-chat.server.public-title}")
+    private String serverTitle;
+
+    public void sendToRoomByClient(MessagePacket packet, Client client) {
+        client.getRoom()
+                .orElseThrow()
+                .broadcast(packet);
     }
 
     public void removeFromRoomIfJoined(Client client) {
         client.getRoom().ifPresent(r -> {
-            MessagePacket notification = new MessagePacket("Server", client.getUsername() + " left the chat room");
+            MessagePacket notification = new MessagePacket(serverTitle, client.getUsername() + " left the chat room");
             r.broadcast(notification);
             r.getClients().remove(client);
         });
@@ -34,7 +41,7 @@ public class RoomService {
     public void joinRoom(JoinRoomPacket packet, Client client) {
         String roomId = packet.getRoomId();
 
-        Room room = rooms.computeIfAbsent(roomId, (s) -> new PublicRoom(roomId));
+        Room room = roomStorage.save(roomId);
         room.getClients().add(client);
 
         client.setRoom(room);
@@ -46,7 +53,7 @@ public class RoomService {
         );
         client.sendPacket(operationResultPacket);
 
-        MessagePacket messagePacket = new MessagePacket("Server", client.getUsername() + " joined the chat room");
+        MessagePacket messagePacket = new MessagePacket(serverTitle, client.getUsername() + " joined the chat room");
 
         room.broadcast(messagePacket);
     }
@@ -54,7 +61,7 @@ public class RoomService {
     public void leaveRoom(Client client) {
         client.getRoom().ifPresentOrElse(
                 r -> {
-                    MessagePacket messagePacket = new MessagePacket("Server", client.getUsername() + " left the chat room");
+                    MessagePacket messagePacket = new MessagePacket(serverTitle, client.getUsername() + " left the chat room");
                     r.broadcast(messagePacket);
 
                     OperationResultPacket resultPacket = new OperationResultPacket(true, Operation.LEAVE_ROOM);
@@ -64,5 +71,23 @@ public class RoomService {
                     OperationResultPacket resultPacket = new OperationResultPacket(false, Operation.LEAVE_ROOM, "You are not joined any room");
                     client.sendPacket(resultPacket);
                 });
+    }
+
+    public void broadcastToAllRooms(String message) {
+        MessagePacket messagePacket = new MessagePacket(serverTitle, message);
+        roomStorage.getAll()
+                .forEach(room -> room.broadcast(messagePacket));
+    }
+
+    public void sendToRoom(String roomName, String message) {
+        Room room = roomStorage.getByName(roomName)
+                .orElseThrow(() -> new InvalidParameterException("Room is not found"));
+
+        MessagePacket messagePacket = new MessagePacket(serverTitle, message);
+        room.broadcast(messagePacket);
+    }
+
+    public int countRooms() {
+        return roomStorage.count();
     }
 }
